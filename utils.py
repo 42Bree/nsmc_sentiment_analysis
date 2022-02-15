@@ -12,6 +12,8 @@ def init_logger():
 def set_device():
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
+    return device
+
 
 def set_seed():
     random.seed(42)
@@ -19,3 +21,10 @@ def set_seed():
     torch.manual_seed(42)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(42)
+
+
+def get_accuracy(preds, labels):
+    pred_flat = np.argmax(preds, axis=1).flatten()
+    labels_flat = labels.flatten()
+
+    return np.sum(pred_flat == labels_flat) / len(labels_flat)

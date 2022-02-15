@@ -1,7 +1,7 @@
 import argparse
 
 from utils import init_logger, set_device, set_seed
-from data_loader import read_data, tokenize
+from data_loader import read_data, process
 
 
 def main(args):
@@ -9,7 +9,9 @@ def main(args):
     set_seed()
 
     train_data, test_data = read_data(args)
-    tokenize(train_data)
+    feature_train = process(data=train_data, max_seq=128)
+    feature_test = process(data=test_data, max_seq=128)
+    print(feature_train.input_ids)
 
 
 if __name__ == '__main__':
