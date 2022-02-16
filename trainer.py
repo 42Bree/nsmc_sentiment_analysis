@@ -23,11 +23,11 @@ class Trainer(object):
     def train(self):
         train_inputs, validation_inputs, train_labels, validation_labels = train_test_split(self.train_dataset.input_ids,
                                                                                             self.train_dataset.labels,
-                                                                                            random_state=2018,
+                                                                                            random_state=2021,
                                                                                             test_size=0.1)
         train_masks, validation_masks, _, _ = train_test_split(self.train_dataset.attention_masks,
                                                                self.train_dataset.input_ids,
-                                                               random_state=2018,
+                                                               random_state=2021,
                                                                test_size=0.1)
         train_inputs = torch.tensor(train_inputs)
         train_labels = torch.tensor(train_labels)
@@ -35,7 +35,13 @@ class Trainer(object):
         validation_inputs = torch.tensor(validation_inputs)
         validation_labels = torch.tensor(validation_labels)
         validation_masks = torch.tensor(validation_masks)
-        batch_size = 32
+
+        # batch size 어떻게 정하는지, GPU에 fit 하는지 확인하는 방법
+        batch_size = 64
+
+        #https://subinium.github.io/pytorch-dataloader/
+
+        #tensor dataset의 경우 class로 뺄 수 있을 거 같음. __getitem__
         train_data = TensorDataset(train_inputs, train_masks, train_labels)
         train_sampler = RandomSampler(train_data)
         train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size)
@@ -44,18 +50,14 @@ class Trainer(object):
         validation_sampler = SequentialSampler(validation_data)
         validation_dataloader = DataLoader(validation_data, sampler=validation_sampler, batch_size=batch_size)
 
-        optimizer = AdamW(self.model.parameters(),
+        optimizer = AdamW(self.model.parameters(), #Adam을 안쓰는경우는 뭘까
                           lr=2e-5,  # 학습률
                           eps=1e-8  # 0으로 나누는 것을 방지하기 위한 epsilon 값
                           )
 
-        # 에폭수
         epochs = 4
-
-        # 총 훈련 스텝 : 배치반복 횟수 * 에폭
         total_steps = len(train_dataloader) * epochs
-
-        # 처음에 학습률을 조금씩 변화시키는 스케줄러 생성
+        #.get_cosine_schedule_with_warmup 이건 어떤걸 학습할때  쓰이는 걸까?
         scheduler = get_linear_schedule_with_warmup(optimizer,
                                                     num_warmup_steps=0,
                                                     num_training_steps=total_steps)

@@ -46,7 +46,7 @@ def process(data, max_seq):
 
         input_id = tokenizer.convert_tokens_to_ids(tokens)
         input_ids.append(input_id)
-    input_ids = pad_sequences(input_ids, maxlen=max_seq, dtype="long", truncating="post", padding="post")
+    input_ids = pad_sequences(input_ids, maxlen=max_seq, dtype="long", truncating="post", padding="post") #post or pre RNN이 아닐 경우
 
     attention_masks = []
     for input_id in input_ids:
@@ -55,7 +55,7 @@ def process(data, max_seq):
 
     labels = data['label'].values
 
-    feature = Feature(input_ids=input_ids, attention_mask=attention_masks, label_id=labels, mode=mode)
+    feature = Feature(input_ids=input_ids, attention_mask=attention_masks, label_id=labels)
 
     return feature
 
