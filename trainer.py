@@ -64,6 +64,7 @@ class Trainer(object):
                                                                                   total_correct / total_len))
                     total_len = 0
                     total_correct = 0
+                    self.save_model()
 
                 batch = tuple(b.to(self.device) for b in batch)
                 input_ids, attention_mask, labels = batch
@@ -101,7 +102,7 @@ class Trainer(object):
         test_labels = torch.tensor(self.test_dataset.labels)
         test_masks = torch.tensor(self.test_dataset.attention_masks)
 
-        batch_size = 32 # config로 빼야지
+        batch_size = 32
 
         test_data = TensorDataset(test_inputs, test_masks, test_labels)
         test_loader = DataLoader(test_data, shuffle=True, batch_size=batch_size)
@@ -114,24 +115,39 @@ class Trainer(object):
             batch = tuple(b.to(self.device) for b in batch)
 
             # 배치에서 데이터 추출
-            b_input_ids, b_input_mask, b_labels = batch
+            input_ids, attention_mask, labels = batch
 
             with torch.no_grad():
-                outputs = self.model(b_input_ids, attention_mask=b_input_mask)
+                outputs = self.model(input_ids, attention_mask=attention_mask)
 
-            # 로스 구함
-            logits = outputs[0]
+            logits, _ = outputs
 
-            # CPU로 데이터 이동
             logits = logits.detach().cpu().numpy()
-            label_ids = b_labels.to('cpu').numpy()
+            label_ids = labels.to('cpu').numpy()
 
-            # 출력 로짓과 라벨을 비교하여 정확도 계산
             tmp_eval_accuracy = get_accuracy(logits, label_ids)
             eval_accuracy += tmp_eval_accuracy
             nb_eval_steps += 1
 
-        print("")
         print("Accuracy: {0:.2f}".format(eval_accuracy / nb_eval_steps))
 
+    def save_model(self):
+        if not os.path.exists(self.args.model_dir):
+            os.makedirs(self.args.model_dir)
+        model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
+        model_to_save.save_pretrained(self.args.model_dir)
+
+        torch.save(self.args, os.path.join(self.args.model_dir, 'training_args.bin'))
+        logger.info("Saving model checkpoint to %s", self.args.model_dir)
+
+    def load_model(self):
+        if not os.path.exists(self.args.model_dir):
+            raise Exception("Model doesn't exists! Train first!")
+
+        try:
+            self.model = self.model_class.from_pretrained(self.args.model_dir)
+            self.model.to(self.device)
+            logger.info("***** Model Loaded *****")
+        except:
+            raise Exception("Some model files might be missing...")
 

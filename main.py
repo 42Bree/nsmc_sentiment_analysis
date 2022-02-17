@@ -2,16 +2,24 @@ import argparse
 
 from utils import init_logger, set_device, set_seed
 from data_loader import read_data, process
-
+from trainer import Trainer
 
 def main(args):
     init_logger()
     set_seed()
 
     train_data, test_data = read_data(args)
-    feature_train = process(data=train_data, max_seq=128)
-    feature_test = process(data=test_data, max_seq=128)
-    print(feature_train.input_ids)
+    train_dataset = process(data=train_data, max_seq=128)
+    test_dataset = process(data=test_data, max_seq=128)
+
+    trainer = Trainer(args, train_dataset, test_dataset)
+
+    if args.do_train:
+        trainer.train()
+
+    if args.do_eval:
+        trainer.load_model()
+        trainer.eval()
 
 
 if __name__ == '__main__':
