@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 
 class Feature(object):
     """ features of data """
-    def __init__(self, input_ids, attention_mask, label_id):
+    def __init__(self, input_ids, attention_masks, labels):
         self.input_ids = input_ids
-        self.attention_mask = attention_mask
+        self.attention_masks = attention_masks
         # self.mode = mode
-        self.label_id = label_id
+        self.labels = labels
 
 
 def read_data(args):
@@ -38,9 +38,10 @@ def process(data, max_seq):
 
     tokenizer = KoBertTokenizer.from_pretrained('monologg/kobert')
 
+    texts = data['document']
     #이 사이에 전처리해주는 함수 하나 추가해도 좋을 거 같아.
 
-    for text in texts[:3]:
+    for text in texts:
         tokens = tokenizer.tokenize(text)
         if len(tokens) - max_seq > 2:
             tokens = tokens[:(max_seq-2)]
@@ -57,7 +58,7 @@ def process(data, max_seq):
 
     labels = data['label'].values
 
-    feature = Feature(input_ids=input_ids, attention_mask=attention_masks, label_id=labels)
+    feature = Feature(input_ids=input_ids, attention_masks=attention_masks, labels=labels)
 
     return feature
 
