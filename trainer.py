@@ -22,7 +22,7 @@ class Trainer(object):
         self.args = args
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset
-        self.device = set_device()
+        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         self.model = BertForSequenceClassification.from_pretrained('monologg/kobert', num_labels=2)
 
     def train(self):
@@ -34,8 +34,7 @@ class Trainer(object):
         batch_size = 32 # config로 빼야지
 
         train_data = TensorDataset(train_inputs, train_masks, train_labels)
-        train_sampler = RandomSampler(train_data)
-        train_loader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size)
+        train_loader = DataLoader(train_data, shuffle=True, batch_size=batch_size)
 
         optimizer = AdamW(self.model.parameters(),
                           lr=5e-5,  # 학습률

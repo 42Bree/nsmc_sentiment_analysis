@@ -9,10 +9,10 @@ def init_logger():
                         level=logging.INFO)
 
 
-def set_device():
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-
-    return device
+# def set_device():
+#     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+#
+#     return device
 
 
 def set_seed():

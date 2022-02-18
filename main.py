@@ -4,6 +4,7 @@ from utils import init_logger, set_device, set_seed
 from data_loader import read_data, process
 from trainer import Trainer
 
+
 def main(args):
     init_logger()
     set_seed()
@@ -28,6 +29,8 @@ if __name__ == '__main__':
     parser.add_argument("--train_file", default="data/ratings_train.txt")
     parser.add_argument("--test_file", default="data/ratings_test.txt")
     parser.add_argument("--lr", default="10e-3", help="learning rate")
+    parser.add_argument("--do_train", action="store_true", help="Whether to run training.")
+    parser.add_argument("--do_eval", action="store_true", help="Whether to run eval on the test set.")
 
     args = parser.parse_args()
 
